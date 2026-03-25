@@ -1,0 +1,13 @@
+/target
+Cargo.lock
+
+*.lib
+*.exp
+*.obj
+*.pdb
+build.rs.pdb
+
+/data/*.csv
+
+.vscode/
+.idea/
