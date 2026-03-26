@@ -91,7 +91,7 @@ This approach avoids slope-intercept form ($y=mx+b$), preventing division-by-zer
 ```
 
 ## 8. License
-This project is developed for the [Your Course Name] software engineering requirement and for neuroimmunopathology research at [Your Institution].
+This project is developed for the software engineering project and for neuroimmunopathology research at Jinan University.
 
 **Author**: Zixuan Liang
 **Contact**: liangzixuan@stu2023.jnu.edu.cn
