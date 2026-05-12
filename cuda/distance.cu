@@ -2,6 +2,12 @@
 #include <math.h>
 
 
+
+/*
+
+计算 Distance to Annotation 2D
+
+*/
 __device__ float dist_to_segment_sq(
     float px, float py,
     float x1, float y1,
