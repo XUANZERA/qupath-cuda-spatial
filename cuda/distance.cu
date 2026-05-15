@@ -4,9 +4,9 @@
 
 
 /*
-
+=========================================
 计算 Distance to Annotation 2D
-
+=========================================
 */
 __device__ float dist_to_segment_sq(
     float px, float py,
@@ -76,3 +76,9 @@ extern "C" void launch_gpu_kernel(
 
     cudaFree(d_cx); cudaFree(d_cy); cudaFree(d_bx); cudaFree(d_by); cudaFree(d_res);
 }
+
+/*
+=========================================
+计算 Distance to Annotation 2D
+=========================================
+*/

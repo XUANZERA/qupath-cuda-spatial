@@ -1,0 +1,14 @@
+{
+    "extends": "recommended",
+
+    "rules": {
+
+        "NoDouble": {
+            "enabled": false
+        },
+
+        "JavaIoPackageAccess": {
+            "enabled": false
+        }
+    }
+}
