@@ -60,9 +60,9 @@ This design allows different spatial algorithms to share:
 
 Computes the nearest Euclidean distance:
 
-···text
+```text
 point -> nearest point
-···
+```
 
 Typical use cases:
 
@@ -77,9 +77,9 @@ Typical use cases:
 
 Computes minimum distance from points to polygon boundaries using vector projection.
 
-···text
+```text
 point -> nearest polygon edge
-···
+```
 
 Typical use cases:
 
@@ -132,7 +132,7 @@ This enables seamless integration into QuPath workflows.
 
 # 5. Current Project Structure
 
-···text
+```text
 .
 ├── Cargo.toml
 ├── build.rs
@@ -160,7 +160,7 @@ This enables seamless integration into QuPath workflows.
 │   └── benchmark_results/
 │
 └── data/
-···
+```
 
 ---
 
@@ -179,25 +179,25 @@ This enables seamless integration into QuPath workflows.
 
 ## 6.2 Clone Repository
 
-···bash
+```bash
 git clone https://github.com/XUANZERA/qupath-cuda-spatial.git
 
 cd qupath-cuda-spatial
-···
+```
 
 ---
 
 ## 6.3 Build
 
-···bash
+```bash
 cargo build --release
-···
+```
 
 Executable:
 
-···text
+```text
 target/release/qupath_gpu_tool.exe
-···
+```
 
 ---
 
@@ -205,25 +205,25 @@ target/release/qupath_gpu_tool.exe
 
 ## 7.1 nearest-neighbor
 
-···bash
+```bash
 qupath_gpu_tool.exe ^
   --mode nearest-neighbor ^
   --source source.csv ^
   --target target.csv ^
   --output result.csv
-···
+```
 
 ---
 
 ## 7.2 distance-to-polygon
 
-···bash
+```bash
 qupath_gpu_tool.exe ^
   --mode distance-to-polygon ^
   --source source.csv ^
   --target target.csv ^
   --output result.csv
-···
+```
 
 ---
 
@@ -289,9 +289,9 @@ Prepare annotations and detections:
 
 Run:
 
-···text
+```text
 scripts/qupath_bridge.groovy
-···
+```
 
 ---
 
@@ -360,9 +360,9 @@ Jinan University
 
 GitHub:
 
-···text
+```text
 https://github.com/XUANZERA
-···
+```
 
 ---
 
