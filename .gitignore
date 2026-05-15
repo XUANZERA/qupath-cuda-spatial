@@ -1,14 +1,27 @@
-/target
-Cargo.lock
+# Rust build output
+/target/
 
-*.lib
-*.exp
+# CUDA / C / C++ build artifacts
 *.exe
+*.exp
+*.lib
 *.obj
+*.o
 *.pdb
-build.rs.pdb
+*.ilk
 
-/data/*.csv
+# Temporary CSV outputs
+/data/result.csv
+/data/source.csv
+/data/target.csv
+/data/cells_input.csv
+/data/boundary_input.csv
 
+# QuPath / local temp
+*.tmp
+*.log
+
+# VSCode / system
 .vscode/
-.idea/
+.DS_Store
+Thumbs.db

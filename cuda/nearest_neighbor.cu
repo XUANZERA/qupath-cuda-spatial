@@ -13,8 +13,7 @@
 
 =========================================
 */
-extern "C"
-__global__ void nearest_neighbor_kernel(
+extern "C" __global__ void nearest_neighbor_kernel(
     const float* source_x,
     const float* source_y,
     int num_source,
@@ -50,6 +49,49 @@ __global__ void nearest_neighbor_kernel(
     output_dist[idx] = sqrtf(min_distance);
 }
 
+extern "C" void launch_nearest_neighbor_kernel(
+    const float* source_x,
+    const float* source_y,
+    int num_source,
+
+    const float* target_x,
+    const float* target_y,
+    int num_target,
+
+    float* output_dist
+)
+{
+    float *d_source_x, *d_source_y, *d_target_x, *d_target_y, *d_output;
+
+    cudaMalloc(&d_su_x, num_source * sizeof(float));
+    cudaMalloc(&d_src_y, num_source * sizeof(float));
+    cudaMalloc(&d_tar_x, num_target * sizeof(float));
+    cudaMalloc(&d_tar_y, num_target * sizeof(float));
+    cudaMalloc(&d_output, num_source * sizeof(float));
+
+    cudaMemcpy(d_source_x, source_x, num_source * sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_source_y, source_y, num_source * sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_target_x, target_x, num_target * sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_target_y, target_y, num_target * sizeof(float), cudaMemcpyHostToDevice);
+
+    int threads_per_block = 256;
+    int blocks_per_grid = (num_src + threads_per_block - 1) / threads_per_block;
+
+    nearest_neighbor_kernel<<<blocks_per_grid, threads_per_block>>>(
+        d_src_x, d_src_y, num_src,
+        d_tar_x, d_tar_y, num_tar,
+        d_output
+    );
+
+    float* output_dist = (float*) malloc(num_src * sizeof(float));
+    cudaMemcpy(output_dist, d_output, num_src * sizeof(float), cudaMemcpyDeviceToHost);
+
+    cudaFree(d_src_x);
+    cudaFree(d_src_y);
+    cudaFree(d_tar_x);
+    cudaFree(d_tar_y);
+    cudaFree(d_output);
+}
 
 // int main() {
 
