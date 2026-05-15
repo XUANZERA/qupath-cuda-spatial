@@ -5,7 +5,7 @@ fn point_to_segment_distance(
     x1: f32, 
     y1: f32, 
 
-    x2: f32, 
+    x2: f32,
     y2: f32
 ) -> f32 
 {
@@ -36,8 +36,8 @@ fn point_to_polygon_distance(
 ) -> f32 {
     let mut min_distance = f32::INFINITY;
 
-    for i in 0..poly_x.len() - 1 {
-        let distance = point_to_segment_dist(
+    for i in 0..polygon_x.len() - 1 {
+        let distance = point_to_segment_distance(
             px, 
             py, 
             
@@ -47,7 +47,7 @@ fn point_to_polygon_distance(
             polygon_x[i+1], 
             polygon_y[i+1]);
 
-        if d < min_distance {
+        if distance < min_distance {
             min_distance = distance;
         }
     }
@@ -66,7 +66,7 @@ pub fn distance_to_polygon_cpu(
 {
     let mut output = Vec::with_capacity(source_x.len());
 
-    for x in 0..source_x.len() {
+    for i in 0..source_x.len() {
         let distance = point_to_polygon_distance(
             source_x[i],
             source_y[i],

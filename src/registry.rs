@@ -11,9 +11,9 @@ pub fn build_registry()
     let mut registry = HashMap::new();
 
     registry.insert(
-        "distance-to-polygon",
+        "distance_to_polygon",
         SpatialPrimitive {
-            name: "distance-to-polygon",
+            name: "distance_to_polygon",
 
             gpu: distance_to_polygon::distance_to_polygon_gpu,
 
@@ -22,9 +22,9 @@ pub fn build_registry()
     );
 
     registry.insert(
-        "nearest-neighbor",
+        "nearest_neighbor",
         SpatialPrimitive {
-            name: "nearest-neighbor",
+            name: "nearest_neighbor",
 
             gpu: nearest_neighbor::nearest_neighbor_gpu,
 

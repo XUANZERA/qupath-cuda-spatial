@@ -1,5 +1,8 @@
 #include <cuda_runtime.h>
 #include <math.h>
+#include <stdio.h>
+
+#include "cuda_utils.cuh"
 
 
 __device__ float dist_to_segment_sq(
@@ -30,88 +33,104 @@ __device__ float dist_to_segment_sq(
 
 
 extern "C" __global__ void distance_to_polygon_kernel(
-    const float* cx, 
-    const float* cy, 
-    int n_cells,
+    const float* source_x, 
+    const float* source_y, 
+    int num_source,
 
-    const float* bx, 
-    const float* by, 
-    int n_verts,
+    const float* target_x, 
+    const float* target_y, 
+    int num_target,
 
-    float* out_dist
+    float* output
 ) 
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
-    if (i < n_cells) {
+    if (i < num_source) {
         float min_d = 1e20f;
         
-        float px = cx[i];
-        float py = cy[i];
+        float px = source_x[i];
+        float py = source_y[i];
 
-        for (int j = 0; j < n_verts - 1; j ++) {
-            float d2 = dist_to_segment_sq(px, py, bx[j], by[j], bx[j+1], by[j+1]);
+        for (int j = 0; j < num_target - 1; j ++) {
+            float d2 = dist_to_segment_sq(
+                px, py, target_x[j], 
+                target_y[j], target_x[j+1], target_y[j+1]
+            );
 
             if (d2 < min_d) min_d = d2;
         }
-        out_dist[i] = sqrtf(min_d);  
+        output[i] = sqrtf(min_d);  
     }
 }
 
 
 extern "C" void launch_distance_to_polygon_kernel(
-    const float* cx, 
-    const float* cy, 
-    int n_cells,
+    const float* source_x, 
+    const float* source_y, 
+    int num_source,
 
-    const float* bx, 
-    const float* by, 
-    int n_verts,
+    const float* target_x, 
+    const float* target_y, 
+    int num_target,
 
     float* results
 ) 
 {
-    float *d_cx, *d_cy, *d_bx, *d_by, *d_res;
+    float *d_source_x, *d_source_y, *d_target_x, *d_target_y, *d_output;
 
-    cudaMalloc(&d_cx, n_cells * sizeof(float));
-    cudaMalloc(&d_cy, n_cells * sizeof(float));
-    cudaMalloc(&d_bx, n_verts * sizeof(float));
-    cudaMalloc(&d_by, n_verts * sizeof(float));
-    cudaMalloc(&d_res, n_cells * sizeof(float));
+    cudaMalloc(&d_source_x, num_source * sizeof(float));
+    cudaMalloc(&d_source_y, num_source * sizeof(float));
+    cudaMalloc(&d_target_x, num_target * sizeof(float));
+    cudaMalloc(&d_target_y, num_target * sizeof(float));
+    cudaMalloc(&d_output, num_source * sizeof(float));
 
-    cudaMemcpy(d_cx, cx, n_cells * sizeof(float), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_cy, cy, n_cells * sizeof(float), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_bx, bx, n_verts * sizeof(float), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_by, by, n_verts * sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_source_x, source_x, num_source * sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_source_y, source_y, num_source * sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_target_x, target_x, num_target * sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_target_y, target_y, num_target * sizeof(float), cudaMemcpyHostToDevice);
 
     int threads = 256;
-    int blocks = (n_cells + threads - 1) / threads;
+    int blocks = (num_source + threads - 1) / threads;
 
+    cudaEvent_t start, stop;
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+
+    cudaEventRecord(start);
     distance_to_polygon_kernel<<<blocks, threads>>>(
-        d_cx, d_cy, n_cells, 
-        d_bx, d_by, n_verts, 
-        d_res);
+        d_source_x, d_source_y, num_source, 
+        d_target_x, d_target_y, num_target, 
+        d_output);
 
-    cudaError_t err = cudaGetLastError();
+    // launch error
+    check_cuda_error(
+        "distance_to_polygon_kernel launch"
+    );
 
-    if (err != cudaSuccess) {
-        printf(
-            "CUDA kernel launch failed: %s\n",
-            cudaGetErrorString(err)
-        );
-    }
+    float kernel_ms = benchmark_kernel_ms(
+        start,
+        stop
+    );
 
-    cudaMemcpy(results, d_res, n_cells * sizeof(float), cudaMemcpyDeviceToHost);
+    // runtime error
+    check_cuda_error(
+        "distance_to_polygon_kernel runtime"
+    );
 
-    cudaFree(d_cx); 
-    cudaFree(d_cy); 
-    cudaFree(d_bx); 
-    cudaFree(d_by); 
-    cudaFree(d_res);
+    printf(
+        "[CUDA] distance_to_polygon kernel: %.6f ms\n",
+        kernel_ms
+    );
+
+    cudaMemcpy(results, d_output, num_source * sizeof(float), cudaMemcpyDeviceToHost);
+
+    cudaFree(d_source_x); 
+    cudaFree(d_source_y); 
+    cudaFree(d_target_x); 
+    cudaFree(d_target_y); 
+    cudaFree(d_output);
+
+    cudaEventDestroy(start);
+    cudaEventDestroy(stop);
 }
-
-/*
-=========================================
-计算 Distance to Annotation 2D
-=========================================
-*/
