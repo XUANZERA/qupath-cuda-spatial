@@ -1,6 +1,8 @@
-# QuPath-CUDA-Spatial
+
 
 <div align="center">
+
+# QuPath-CUDA-Spatial
 
 ## High-Performance GPU Spatial Primitives for Computational Pathology
 
@@ -17,6 +19,8 @@
 [![QuPath](https://img.shields.io/badge/QuPath-0.5.1-blue.svg)](https://qupath.github.io/)
 [![License](https://img.shields.io/badge/license-research-blue.svg)](#license)
 
+🎥 Video tutorial:
+https://youtu.be/iA-HR2wv8Vo
 </div>
 
 ---
@@ -155,6 +159,22 @@ point -> nearest polygon edge
 ---
 
 ## 5. Quick Start
+
+### Video Tutorial
+
+A full workflow tutorial is available here:
+
+🎥 https://youtu.be/iA-HR2wv8Vo
+
+The tutorial demonstrates:
+
+- exporting QuPath detections
+- exporting polygon annotations
+- GPU distance-to-polygon computation
+- importing results back into QuPath
+- visualization of spatial measurements
+
+---
 
 ### Step 1 — Export Data from QuPath
 
@@ -523,6 +543,22 @@ point -> nearest polygon edge
 ---
 
 ## 5. 快速开始
+
+### 视频教程
+
+完整工作流视频教程：
+
+🎥 https://youtu.be/iA-HR2wv8Vo
+
+视频内容包括：
+
+- QuPath detection 导出
+- polygon annotation 导出
+- GPU distance-to-polygon 空间计算
+- result.csv 导回 QuPath
+- 空间测量结果可视化
+
+---
 
 ### Step 1 — QuPath 导出数据
 
