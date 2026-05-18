@@ -11,71 +11,40 @@ Map CONFIG = [
     // Project
     // --------------------------------------------------------
 
-    project_dir: "D:/code/qupath_gpu_tool",
+    project_dir: "D:/qupath-cuda-spatial",
 
     exe_relpath: "target/release/qupath_gpu_tool.exe",
 
     data_dir_relpath: "data",
 
     // --------------------------------------------------------
-    // Spatial mode
-    // --------------------------------------------------------
-    // 你的 Rust/CUDA 端目前语义是：
-    // source.csv = 一类点
-    // target.csv = 一类点
-    //
-    // 如果 target 点来自 nerve boundary sampling，
-    // 这个模式更准确叫 distance_to_target_points。
-    //
-    // 这里仍保留你的 CLI mode 名称，避免改 Rust 端。
-
-    mode: "distance_to_polygon",
-
-    // --------------------------------------------------------
-    // QuPath classes
+    // CSV
     // --------------------------------------------------------
 
-    source_class: "immune_cell",
+    source_csv_name: "source.csv",
 
-    target_class: "nerve_regions",
+    target_csv_name: "target.csv",
 
-    // source 对象来源：
-    // "detections"    -> getDetectionObjects()
-    // "annotations"   -> getAnnotationObjects()
-    // "both"          -> detections + annotations
-
-    source_object_scope: "detections",
-
-    // target 对象来源：
-    // nerve_regions 通常是 annotation，所以默认 annotations
-
-    target_object_scope: "annotations",
-
-    // --------------------------------------------------------
-    // Measurement
-    // --------------------------------------------------------
-
-    output_measurement: "Distance_to_Nerve_um(GPU)",
-
-    overwrite_measurement: true,
-
-    // --------------------------------------------------------
-    // Pixel calibration
-    // --------------------------------------------------------
-    // null 表示使用图像 calibration；
-    // 如果图像无 calibration，可手动写 0.49610156577455383
-
-    pixel_to_um: null,
+    result_csv_name: "result.csv",
 
     // --------------------------------------------------------
     // Runtime
     // --------------------------------------------------------
 
+    mode: "distance_to_polygon",
+
+    output_measurement:
+        "Distance_to_Nerve_um(GPU)",
+
+    overwrite_measurement: true,
+
     verbose: true,
 
-    cleanup_temp_files: false,
+    // --------------------------------------------------------
+    // Pixel calibration
+    // --------------------------------------------------------
 
-    warning_source_count: 500000
+    pixel_to_um: null
 ]
 
 // ============================================================
@@ -88,10 +57,6 @@ def logInfo = { String msg ->
     }
 }
 
-def logWarn = { String msg ->
-    println "[QuPath-CUDA-Spatial][WARNING] ${msg}"
-}
-
 def logError = { String msg ->
     println "[QuPath-CUDA-Spatial][ERROR] ${msg}"
 }
@@ -100,53 +65,81 @@ def logError = { String msg ->
 // Paths
 // ============================================================
 
-File PROJECT_DIR = new File(CONFIG.project_dir as String)
+File PROJECT_DIR =
+    new File(CONFIG.project_dir as String)
 
-File DATA_DIR = new File(
-    PROJECT_DIR,
-    CONFIG.data_dir_relpath as String
-)
+File DATA_DIR =
+    new File(
+        PROJECT_DIR,
+        CONFIG.data_dir_relpath as String
+    )
 
-File EXE_FILE = new File(
-    PROJECT_DIR,
-    CONFIG.exe_relpath as String
-)
+File EXE_FILE =
+    new File(
+        PROJECT_DIR,
+        CONFIG.exe_relpath as String
+    )
 
-File SOURCE_CSV = new File(
-    DATA_DIR,
-    "source.csv"
-)
+File SOURCE_CSV =
+    new File(
+        DATA_DIR,
+        CONFIG.source_csv_name as String
+    )
 
-File TARGET_CSV = new File(
-    DATA_DIR,
-    "target.csv"
-)
+File TARGET_CSV =
+    new File(
+        DATA_DIR,
+        CONFIG.target_csv_name as String
+    )
 
-File RESULT_CSV = new File(
-    DATA_DIR,
-    "result.csv"
-)
+File RESULT_CSV =
+    new File(
+        DATA_DIR,
+        CONFIG.result_csv_name as String
+    )
 
 // ============================================================
-// Validation
+// Validate files
 // ============================================================
 
 if (!PROJECT_DIR.exists()) {
-    logError("Project directory not found:\n${PROJECT_DIR.getAbsolutePath()}")
+
+    logError(
+        "Project directory not found:\n" +
+        PROJECT_DIR.getAbsolutePath()
+    )
+
     return
 }
 
 if (!EXE_FILE.exists()) {
-    logError("Executable not found:\n${EXE_FILE.getAbsolutePath()}")
+
+    logError(
+        "Executable not found:\n" +
+        EXE_FILE.getAbsolutePath()
+    )
+
     return
 }
 
-if (!DATA_DIR.exists()) {
-    boolean created = DATA_DIR.mkdirs()
-    if (!created && !DATA_DIR.exists()) {
-        logError("Failed to create data directory:\n${DATA_DIR.getAbsolutePath()}")
-        return
-    }
+if (!SOURCE_CSV.exists()) {
+
+    logError(
+        "source.csv not found:\n" +
+        SOURCE_CSV.getAbsolutePath()
+    )
+
+    return
+}
+
+if (!TARGET_CSV.exists()) {
+
+    logError(
+        "target.csv not found:\n" +
+        TARGET_CSV.getAbsolutePath()
+    )
+
+    return
 }
 
 // ============================================================
@@ -157,268 +150,202 @@ double pixelSizeUm
 
 if (CONFIG.pixel_to_um != null) {
 
-    pixelSizeUm = (CONFIG.pixel_to_um as Number).doubleValue()
+    pixelSizeUm =
+        (CONFIG.pixel_to_um as Number)
+            .doubleValue()
 
-    logWarn("Using manual pixel size: ${pixelSizeUm} um/pixel")
+    logInfo(
+        "Using manual pixel size: " +
+        "${pixelSizeUm} um/pixel"
+    )
 
 } else {
 
-    def imageData = getCurrentImageData()
+    def imageData =
+        getCurrentImageData()
 
     if (imageData == null) {
-        logError("No current image data.")
-        return
-    }
 
-    def cal = imageData
-        .getServer()
-        .getPixelCalibration()
-
-    if (cal == null || !cal.hasPixelSizeMicrons()) {
         logError(
-            "Image has no valid micron pixel calibration. " +
-            "Set CONFIG.pixel_to_um manually."
+            "No current image open."
         )
+
         return
     }
 
-    pixelSizeUm = cal.getAveragedPixelSizeMicrons()
+    def cal =
+        imageData
+            .getServer()
+            .getPixelCalibration()
 
-    logInfo("Pixel size: ${pixelSizeUm} um/pixel")
-}
+    if (
+        cal == null ||
+        !cal.hasPixelSizeMicrons()
+    ) {
 
-// ============================================================
-// Helpers
-// ============================================================
-
-Closure<String> classNameOf = { PathObject obj ->
-    if (obj == null || obj.getPathClass() == null) {
-        return null
-    }
-    return obj.getPathClass().toString()
-}
-
-Closure<List<PathObject>> objectsByScope = { String scope ->
-
-    List<PathObject> objects = []
-
-    if (scope == "detections") {
-
-        objects.addAll(getDetectionObjects())
-
-    } else if (scope == "annotations") {
-
-        objects.addAll(getAnnotationObjects())
-
-    } else if (scope == "both") {
-
-        objects.addAll(getDetectionObjects())
-        objects.addAll(getAnnotationObjects())
-
-    } else {
-
-        throw new RuntimeException(
-            "Invalid object scope: ${scope}. " +
-            "Expected: detections, annotations, or both."
+        logError(
+            "Image has no valid pixel calibration."
         )
+
+        return
     }
 
-    return objects
-}
+    pixelSizeUm =
+        cal.getAveragedPixelSizeMicrons()
 
-Closure<List<PathObject>> filterObjectsByClass = {
-    List<PathObject> objects,
-    String targetClassName ->
-
-    return objects.findAll { PathObject obj ->
-
-        if (obj == null) {
-            return false
-        }
-
-        if (obj.getROI() == null) {
-            return false
-        }
-
-        String cls = classNameOf(obj)
-
-        return cls == targetClassName
-    }
-}
-
-Closure<Void> writePointCsv = {
-    File file,
-    List<PathObject> objects ->
-
-    file.withWriter("UTF-8") { writer ->
-
-        writer.writeLine("x,y")
-
-        objects.each { PathObject obj ->
-
-            def roi = obj.getROI()
-
-            double x = roi.getCentroidX()
-            double y = roi.getCentroidY()
-
-            writer.writeLine("${x},${y}")
-        }
-    }
-
-    return null
+    logInfo(
+        "Pixel size: ${pixelSizeUm} um/pixel"
+    )
 }
 
 // ============================================================
-// Collect source / target objects
+// Get detections
 // ============================================================
 
-List<PathObject> sourceCandidates =
-    objectsByScope(CONFIG.source_object_scope as String)
+List<PathObject> detections =
+    new ArrayList<>(getDetectionObjects())
 
-List<PathObject> targetCandidates =
-    objectsByScope(CONFIG.target_object_scope as String)
+logInfo(
+    "Detections loaded: ${detections.size()}"
+)
 
-List<PathObject> sourceObjects =
-    filterObjectsByClass(
-        sourceCandidates,
-        CONFIG.source_class as String
-    )
+// ============================================================
+// Count source.csv rows
+// ============================================================
 
-List<PathObject> targetObjects =
-    filterObjectsByClass(
-        targetCandidates,
-        CONFIG.target_class as String
-    )
+List<String> sourceLines =
+    SOURCE_CSV.readLines("UTF-8")
 
-logInfo("Source candidates: ${sourceCandidates.size()}")
-logInfo("Target candidates: ${targetCandidates.size()}")
-logInfo("Matched source objects [${CONFIG.source_class}]: ${sourceObjects.size()}")
-logInfo("Matched target objects [${CONFIG.target_class}]: ${targetObjects.size()}")
+if (sourceLines.size() <= 1) {
 
-if (sourceObjects.isEmpty()) {
     logError(
-        "No source objects matched class '${CONFIG.source_class}'. " +
-        "Check class name and source_object_scope."
+        "source.csv has no data rows."
     )
-
-    println "Available detection classes:"
-    getDetectionObjects()
-        .collect { classNameOf(it) }
-        .unique()
-        .sort()
-        .each { println "  - ${it}" }
-
-    println "Available annotation classes:"
-    getAnnotationObjects()
-        .collect { classNameOf(it) }
-        .unique()
-        .sort()
-        .each { println "  - ${it}" }
 
     return
 }
 
-if (targetObjects.isEmpty()) {
+int sourcePointCount =
+    sourceLines.size() - 1
+
+logInfo(
+    "source.csv points: ${sourcePointCount}"
+)
+
+// ============================================================
+// IMPORTANT CHECK
+// ============================================================
+
+if (sourcePointCount != detections.size()) {
+
     logError(
-        "No target objects matched class '${CONFIG.target_class}'. " +
-        "Check class name and target_object_scope."
+        "Mismatch between source.csv rows " +
+        "and QuPath detections.\n" +
+        "source.csv rows = ${sourcePointCount}\n" +
+        "detections = ${detections.size()}\n\n" +
+        "CSV row order must match detection order."
     )
-
-    println "Available detection classes:"
-    getDetectionObjects()
-        .collect { classNameOf(it) }
-        .unique()
-        .sort()
-        .each { println "  - ${it}" }
-
-    println "Available annotation classes:"
-    getAnnotationObjects()
-        .collect { classNameOf(it) }
-        .unique()
-        .sort()
-        .each { println "  - ${it}" }
 
     return
 }
 
-if (sourceObjects.size() > (CONFIG.warning_source_count as Number).intValue()) {
-    logWarn("Large source object count detected: ${sourceObjects.size()}")
-}
-
 // ============================================================
-// Export CSV
-// ============================================================
-
-writePointCsv(SOURCE_CSV, sourceObjects)
-writePointCsv(TARGET_CSV, targetObjects)
-
-logInfo("Wrote source CSV: ${SOURCE_CSV.getAbsolutePath()}")
-logInfo("Wrote target CSV: ${TARGET_CSV.getAbsolutePath()}")
-
-// ============================================================
-// Launch external Rust/CUDA tool
+// Launch CUDA tool
 // ============================================================
 
 List<String> command = [
+
     EXE_FILE.getAbsolutePath(),
+
     "--mode",
     CONFIG.mode as String,
+
     "--source",
     SOURCE_CSV.getAbsolutePath(),
+
     "--target",
     TARGET_CSV.getAbsolutePath(),
+
     "--output",
     RESULT_CSV.getAbsolutePath()
 ]
 
-logInfo("Launching spatial primitive...")
+logInfo(
+    "Launching spatial primitive..."
+)
 
-ProcessBuilder pb = new ProcessBuilder(command)
+ProcessBuilder pb =
+    new ProcessBuilder(command)
 
 pb.redirectErrorStream(true)
 
 Process process = pb.start()
 
-process.inputStream.eachLine { String line ->
-    println "GPU_LOG: ${line}"
+process.inputStream.eachLine {
+    println "GPU_LOG: ${it}"
 }
 
 int exitCode = process.waitFor()
 
 if (exitCode != 0) {
-    logError("Rust/CUDA process failed with exit code: ${exitCode}")
+
+    logError(
+        "Rust/CUDA process failed: " +
+        "${exitCode}"
+    )
+
     return
 }
+
+// ============================================================
+// Validate result.csv
+// ============================================================
 
 if (!RESULT_CSV.exists()) {
-    logError("Result CSV not found:\n${RESULT_CSV.getAbsolutePath()}")
+
+    logError(
+        "result.csv not found."
+    )
+
     return
 }
 
-// ============================================================
-// Read result.csv
-// ============================================================
-
-List<String> resultLines = RESULT_CSV.readLines("UTF-8")
+List<String> resultLines =
+    RESULT_CSV.readLines("UTF-8")
 
 if (resultLines.size() <= 1) {
-    logError("Result CSV has no data rows.")
+
+    logError(
+        "result.csv has no data rows."
+    )
+
     return
 }
 
-List<Double> distancesPx = resultLines
-    .tail()
-    .collect { String line ->
-        String firstCol = line.split(",")[0].trim()
-        return Double.parseDouble(firstCol)
-    }
+List<Double> distancesPx =
+    resultLines
+        .tail()
+        .collect { String line ->
 
-if (distancesPx.size() != sourceObjects.size()) {
+            String value =
+                line
+                    .split(",")[0]
+                    .trim()
+
+            return Double.parseDouble(value)
+        }
+
+if (
+    distancesPx.size() !=
+    detections.size()
+) {
+
     logError(
-        "Result count mismatch. " +
-        "sourceObjects=${sourceObjects.size()}, " +
-        "resultRows=${distancesPx.size()}"
+        "Result row mismatch.\n" +
+        "results = ${distancesPx.size()}\n" +
+        "detections = ${detections.size()}"
     )
+
     return
 }
 
@@ -426,31 +353,53 @@ if (distancesPx.size() != sourceObjects.size()) {
 // Write measurements
 // ============================================================
 
-sourceObjects.eachWithIndex { PathObject obj, int i ->
+detections.eachWithIndex {
+    PathObject obj,
+    int i ->
 
-    def ml = obj.getMeasurementList()
+    def ml =
+        obj.getMeasurementList()
 
-    if (!(CONFIG.overwrite_measurement as boolean)) {
+    if (
+        !(CONFIG.overwrite_measurement
+            as boolean)
+    ) {
 
-        double oldValue = ml.get(CONFIG.output_measurement as String)
+        double oldValue =
+            ml.get(
+                CONFIG.output_measurement
+                    as String
+            )
 
         if (!Double.isNaN(oldValue)) {
             return
         }
     }
 
-    double distPx = distancesPx[i]
-    double distUm = distPx * pixelSizeUm
+    double distPx =
+        distancesPx[i]
+
+    double distUm =
+        distPx * pixelSizeUm
 
     ml.put(
-        CONFIG.output_measurement as String,
+        CONFIG.output_measurement
+            as String,
         distUm
     )
 }
 
-// QuPath 官方脚本 API：通知 hierarchy / GUI 更新
+// ============================================================
+// Refresh QuPath
+// ============================================================
+
 fireHierarchyUpdate()
 
-logInfo("Measurement update complete.")
-logInfo("Updated source objects: ${sourceObjects.size()}")
-logInfo("Measurement name: ${CONFIG.output_measurement}")
+logInfo(
+    "Measurement update complete."
+)
+
+logInfo(
+    "Updated detections: " +
+    "${detections.size()}"
+)
