@@ -1,79 +1,116 @@
 # QuPath-CUDA-Spatial
 
-### High-Performance GPU Spatial Primitives for Computational Pathology
+<div align="center">
+
+## High-Performance GPU Spatial Primitives for Computational Pathology
+
+<br>
+
+<a href="#english-version">🇺🇸 English</a>
+&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="#中文版本">🇨🇳 中文</a>
+
+<br><br>
 
 [![Rust](https://img.shields.io/badge/rust-1.70%2B-orange.svg)](https://www.rust-lang.org)
 [![CUDA](https://img.shields.io/badge/CUDA-11.0%2B-green.svg)](https://developer.nvidia.com/cuda-toolkit)
 [![QuPath](https://img.shields.io/badge/QuPath-0.5.1-blue.svg)](https://qupath.github.io/)
 [![License](https://img.shields.io/badge/license-research-blue.svg)](#license)
 
+</div>
+
 ---
 
-# 1. Project Overview
+<a id="english-version"></a>
 
-QuPath-CUDA-Spatial is a GPU-accelerated spatial analysis toolkit for computational pathology and multiplex imaging workflows.
+# 🇺🇸 English
 
-The project provides:
+## 1. Overview
 
-- High-performance CUDA spatial primitives
-- Rust-based CLI infrastructure
-- QuPath Groovy integration
-- Unified spatial primitive abstraction
-- Reproducible benchmarking pipeline
+QuPath-CUDA-Spatial is an experimental GPU-accelerated spatial analysis toolkit designed for computational pathology and multiplex imaging workflows.
 
-The toolkit is designed for large-scale whole-slide image (WSI) spatial analysis, particularly:
+The project focuses on accelerating large-scale whole-slide image (WSI) spatial computation bottlenecks commonly encountered in QuPath workflows.
+
+<br>
+
+### Current GPU Spatial Primitives
+
+| Primitive | Description |
+|---|---|
+| `nearest-neighbor` | Fast nearest-point distance computation |
+| `distance-to-polygon` | Fast point-to-boundary distance computation |
+
+<br>
+
+### Current Features
+
+- CUDA spatial kernels
+- Rust CLI infrastructure
+- QuPath Groovy bridge scripts
+- Early spatial primitive abstraction
+- Reproducible benchmark pipeline
+
+<br>
+
+### Target Applications
 
 - Tumor microenvironment (TME)
 - Neuroimmune interactions
 - Perineural invasion (PNI)
 - Multiplex immunofluorescence (MxIF)
-- Spatial cell graph construction
+- Spatial graph construction
 - Large-scale distance computation
 
 ---
 
-# 2. Core Design Philosophy
+## 2. Core Design Philosophy
 
-Instead of writing task-specific QuPath scripts repeatedly, this project abstracts spatial analysis into reusable GPU spatial primitives.
+Instead of repeatedly implementing task-specific QuPath scripts, this project attempts to abstract spatial computation into reusable GPU spatial primitives.
 
-Current abstraction:
+<br>
+
+### Current Abstraction Model
 
 | Concept | Meaning |
 |---|---|
-| source | objects being measured |
-| target | reference spatial objects |
-| mode | spatial primitive |
-| output | numerical spatial result |
+| `source` | objects being measured |
+| `target` | reference spatial objects |
+| `mode` | spatial primitive |
+| `output` | numerical spatial result |
 
-This design allows different spatial algorithms to share:
+<br>
 
-- identical CLI interfaces
+The current prototype allows different spatial primitives to share:
+
+- unified CLI interfaces
 - identical IO pipelines
-- identical benchmark infrastructure
-- identical QuPath bridge logic
+- benchmark infrastructure
+- QuPath bridge logic
 
 ---
 
-# 3. Current Spatial Primitives
+## 3. Current Spatial Primitives
 
-## 3.1 nearest-neighbor
+### 3.1 nearest-neighbor
 
-Computes the nearest Euclidean distance:
+Computes nearest Euclidean distance:
 
 ```text
 point -> nearest point
 ```
 
-Typical use cases:
+<br>
+
+#### Typical Use Cases
 
 - immune cell -> nearest immune cell
 - tumor cell -> nearest vessel
-- cell density estimation
-- local spatial interaction analysis
+- local density estimation
+- neighborhood interaction analysis
 
 ---
 
-## 3.2 distance-to-polygon
+### 3.2 distance-to-polygon
 
 Computes minimum distance from points to polygon boundaries using vector projection.
 
@@ -81,7 +118,9 @@ Computes minimum distance from points to polygon boundaries using vector project
 point -> nearest polygon edge
 ```
 
-Typical use cases:
+<br>
+
+#### Typical Use Cases
 
 - cell -> nerve boundary
 - cell -> tumor boundary
@@ -90,104 +129,64 @@ Typical use cases:
 
 ---
 
-# 4. Technical Architecture
+## 4. Benchmark Results
 
-## 4.1 CUDA Layer
+### nearest-neighbor
 
-Implements GPU kernels:
+| Source Size | Target Size | GPU Time | CPU Time | Speedup |
+|---|---|---|---|---|
+| 1e6 | 1e4 | ~0.08 s | ~9.47 s | ~113× |
 
-- point-to-point nearest distance
-- point-to-segment distance
-- polygon edge traversal
-- massively parallel spatial computation
+<br>
 
----
+### distance-to-polygon
 
-## 4.2 Rust Engine Layer
+| Source Size | Target Size | GPU Time | CPU Time | Speedup |
+|---|---|---|---|---|
+| 1e6 | 1e4 | ~0.30 s | ~25.50 s | ~84× |
 
-Responsible for:
+<br>
 
-- CLI dispatch
-- primitive registry
-- CSV IO
-- benchmark execution
-- FFI integration
-- pipeline orchestration
+### Benchmark Environment
 
----
-
-## 4.3 QuPath Bridge Layer
-
-Groovy bridge scripts provide:
-
-- object export
-- annotation export
-- GPU invocation
-- result re-import
-- measurement update
-
-This enables seamless integration into QuPath workflows.
+- NVIDIA RTX 3070 Ti Laptop
+- Intel i9-12900H
 
 ---
 
-# 5. Current Project Structure
+## 5. Quick Start
+
+### Step 1 — Export Data from QuPath
+
+Export:
+
+- detections as CSV
+- annotation polygons as CSV
+
+Example:
 
 ```text
-.
-├── Cargo.toml
-├── build.rs
-│
-├── cuda/
-│   ├── nearest_neighbor.cu
-│   └── distance_to_polygon.cu
-│
-├── src/
-│   ├── main.rs
-│   ├── engine.rs
-│   ├── registry.rs
-│   ├── primitive.rs
-│   ├── benchmark.rs
-│   ├── io.rs
-│   ├── nearest_neighbor.rs
-│   └── distance_to_polygon.rs
-│
-├── scripts/
-│   └── qupath_bridge.groovy
-│
-├── benchmark/
-│   ├── benchmark_generator.py
-│   ├── benchmark_runner.py
-│   └── benchmark_results/
-│
-└── data/
+source.csv
+target.csv
 ```
 
----
+<br>
 
-# 6. Installation
+#### Typical Source Objects
 
-## 6.1 Requirements
+- immune cells
+- tumor cells
+- nuclei centroids
 
-- Windows 10/11
-- NVIDIA GPU
-- CUDA Toolkit 11+
-- Rust 1.70+
-- QuPath 0.5.1+
-- Visual Studio Build Tools
+#### Typical Target Objects
 
----
-
-## 6.2 Clone Repository
-
-```bash
-git clone https://github.com/XUANZERA/qupath-cuda-spatial.git
-
-cd qupath-cuda-spatial
-```
+- nerve annotations
+- tumor boundaries
+- vessel regions
 
 ---
 
-## 6.3 Build
+### Step 2 — Build
 
 ```bash
 cargo build --release
@@ -201,9 +200,9 @@ target/release/qupath_gpu_tool.exe
 
 ---
 
-# 7. CLI Usage
+### Step 3 — Run GPU Primitive
 
-## 7.1 nearest-neighbor
+#### nearest-neighbor
 
 ```bash
 qupath_gpu_tool.exe ^
@@ -215,132 +214,134 @@ qupath_gpu_tool.exe ^
 
 ---
 
-## 7.2 distance-to-polygon
+#### distance-to-polygon
 
 ```bash
 qupath_gpu_tool.exe ^
   --mode distance-to-polygon ^
   --source source.csv ^
-  --target target.csv ^
+  --target polygon.csv ^
   --output result.csv
 ```
 
 ---
 
-# 8. Benchmark Infrastructure
+### Step 4 — Import Back into QuPath
 
-The project includes:
+Output CSV files can be:
 
-- synthetic benchmark generation
-- automated subprocess execution
-- CPU/GPU comparison
-- throughput analysis
-- scalability visualization
+- re-imported into QuPath
+- merged into measurement tables
+- used for downstream spatial analysis
 
-Metrics:
+<br>
 
-| Metric | Meaning |
-|---|---|
-| wallclock_time | full program runtime |
-| gpu_time | GPU pipeline runtime |
-| cpu_time | CPU reference runtime |
-| speedup | CPU/GPU acceleration |
-| throughput | processed points per second |
+#### Typical Downstream Analyses
+
+- immune infiltration analysis
+- nerve proximity analysis
+- spatial shell analysis
+- spatial graph construction
 
 ---
 
-# 9. Benchmark Results
+## 6. QuPath Workflow
 
-## nearest-neighbor
-
-| Source Size | Target Size | GPU Time | CPU Time | Speedup |
-|---|---|---|---|---|
-| 1e6 | 1e4 | ~0.08 s | ~9.47 s | ~113× |
-
----
-
-## distance-to-polygon
-
-| Source Size | Target Size | GPU Time | CPU Time | Speedup |
-|---|---|---|---|---|
-| 1e6 | 1e4 | ~0.30 s | ~25.50 s | ~84× |
-
-Benchmarked on:
-
-- NVIDIA RTX 3070 Ti Laptop
-- 12th Gen Intel(R) Core(TM) i9-12900H
-
----
-
-# 10. QuPath Workflow
-
-## Step 1
-
-Prepare annotations and detections:
-
-- immune_cell
-- nerve_regions
-- tumor_regions
-- vessel_regions
-
----
-
-## Step 2
-
-Run:
+<div align="center">
 
 ```text
-scripts/qupath_bridge.groovy
+QuPath
+   ↓
+Export CSV
+   ↓
+GPU Spatial Primitive
+   ↓
+Result CSV
+   ↓
+Re-import into QuPath
+   ↓
+Spatial statistics / visualization
 ```
 
----
-
-## Step 3
-
-Results are automatically imported back into QuPath measurement tables.
+</div>
 
 ---
 
-# 11. Research Context
+## 7. Technical Architecture
 
-This project was originally developed for:
+### CUDA Layer
 
-- computational pathology
-- multiplex immunofluorescence spatial analysis
-- neuroimmune microenvironment analysis
-- pancreatic ductal adenocarcinoma (PDAC) research
+Current kernels include:
 
-The toolkit is currently being used in experimental workflows involving:
-
-- spatial graph analysis
-- immune infiltration analysis
-- nerve-tumor interaction modeling
-- large-scale WSI spatial computation
+- point-to-point nearest distance
+- point-to-segment distance
+- polygon edge traversal
 
 ---
 
-# 12. Future Roadmap
+### Rust Engine Layer
 
-Planned primitives:
+Responsible for:
+
+- CLI dispatch
+- primitive registry
+- CSV IO
+- benchmark execution
+- FFI integration
+
+---
+
+### QuPath Bridge Layer
+
+Groovy scripts provide:
+
+- object export
+- annotation export
+- GPU invocation
+- result re-import
+- measurement update
+
+---
+
+## 8. Current Limitations
+
+Current limitations include:
+
+- CSV-based IO overhead
+- no persistent GPU memory pool
+- limited primitive coverage
+- Windows-focused build pipeline
+- no multi-GPU support
+- QuPath bridge is currently experimental
+
+<br>
+
+> The project is still in an early research-engineering stage.
+
+---
+
+## 9. Future Roadmap
+
+### Planned Primitives
 
 - radius-query
 - shell-query
 - point-in-polygon
 - graph-edge construction
 - spatial density estimation
-- GPU spatial graph primitives
 
-Planned infrastructure:
+<br>
+
+### Planned Infrastructure
 
 - persistent GPU memory pool
-- kernel-only benchmark mode
-- multi-column outputs
 - batch primitive execution
-- spatial primitive chaining
+- primitive chaining
+- kernel-only benchmark mode
 
 ---
 
-# 13. Disclaimer
+## 10. Disclaimer
 
 This project is:
 
@@ -351,12 +352,16 @@ This project is:
 
 ---
 
-# 14. Author
+## 11. Author
 
-Zixuan Liang
+<div align="center">
+
+### Zixuan Liang
 
 School of Information Science and Technology  
 Jinan University
+
+<br>
 
 GitHub:
 
@@ -364,9 +369,11 @@ GitHub:
 https://github.com/XUANZERA
 ```
 
+</div>
+
 ---
 
-# 15. License
+## 12. License
 
 This repository is currently released for:
 
@@ -374,4 +381,227 @@ This repository is currently released for:
 - educational usage
 - computational pathology development
 
+<br>
+
 Please contact the author for commercial or clinical usage.
+
+---
+
+---
+
+<a id="中文版本"></a>
+
+# 🇨🇳 中文版本
+
+## 1. 项目简介
+
+QuPath-CUDA-Spatial 是一个面向计算病理学（Computational Pathology）的实验性 GPU 空间分析工具包。
+
+该项目主要用于解决 QuPath 大规模全切片图像（WSI）空间分析中的计算瓶颈问题。
+
+<br>
+
+### 当前已实现的 GPU 空间原语
+
+| Primitive | 功能 |
+|---|---|
+| `nearest-neighbor` | 最近邻距离计算 |
+| `distance-to-polygon` | 点到边界最短距离计算 |
+
+<br>
+
+### 当前提供
+
+- CUDA 空间计算 Kernel
+- Rust CLI 基础设施
+- QuPath Groovy 桥接脚本
+- 初步统一的空间原语抽象
+- 可复现 Benchmark 管线
+
+<br>
+
+### 主要目标应用场景
+
+- 肿瘤微环境（TME）
+- 神经免疫分析
+- 神经侵犯（PNI）
+- 多重免疫荧光（MxIF）
+- 空间图构建
+- 大规模距离计算
+
+---
+
+## 2. 核心设计思想
+
+本项目尝试将大量重复的 QuPath 空间分析脚本，抽象为可复用 GPU 空间原语。
+
+<br>
+
+### 当前抽象模型
+
+| 概念 | 含义 |
+|---|---|
+| `source` | 被测量对象 |
+| `target` | 参考空间对象 |
+| `mode` | 空间原语 |
+| `output` | 数值空间结果 |
+
+<br>
+
+目前不同空间原语共享：
+
+- 统一 CLI 接口
+- 相同 IO 流程
+- Benchmark 基础设施
+- QuPath 桥接逻辑
+
+---
+
+## 3. 当前实现的空间原语
+
+### 3.1 nearest-neighbor
+
+计算最近欧氏距离：
+
+```text
+point -> nearest point
+```
+
+<br>
+
+#### 典型应用
+
+- immune cell -> nearest immune cell
+- tumor cell -> nearest vessel
+- 局部密度估计
+- 空间邻域分析
+
+---
+
+### 3.2 distance-to-polygon
+
+计算点到 Polygon 边界的最短距离。
+
+```text
+point -> nearest polygon edge
+```
+
+<br>
+
+#### 典型应用
+
+- cell -> nerve boundary
+- cell -> tumor boundary
+- cell -> annotation edge
+- 空间 shell 分析
+
+---
+
+## 4. Benchmark 结果
+
+### nearest_neighbor
+
+| Source Size | Target Size | GPU Time | CPU Time | Speedup |
+|---|---|---|---|---|
+| 1e6 | 1e4 | ~0.08 s | ~9.47 s | ~113× |
+
+<br>
+
+### distance_to_polygon
+
+| Source Size | Target Size | GPU Time | CPU Time | Speedup |
+|---|---|---|---|---|
+| 1e6 | 1e4 | ~0.30 s | ~25.50 s | ~84× |
+
+<br>
+
+### 测试环境
+
+- NVIDIA RTX 3070 Ti Laptop
+- Intel i9-12900H
+
+---
+
+## 5. 快速开始
+
+### Step 1 — QuPath 导出数据
+
+导出：
+
+- detection CSV
+- polygon annotation CSV
+
+示例：
+
+```text
+source.csv
+target.csv
+```
+
+---
+
+### Step 2 — 编译
+
+```bash
+cargo build --release
+```
+
+---
+
+### Step 3 — 运行 GPU 原语
+
+```bash
+qupath_gpu_tool.exe ^
+  --mode nearest_neighbor ^
+  --source source.csv ^
+  --target target.csv ^
+  --output result.csv
+```
+
+---
+
+### Step 4 — 导回 QuPath
+
+结果 CSV 可以：
+
+- 导回 QuPath
+- 合并 measurement table
+- 用于后续空间统计分析
+
+---
+
+## 6. 当前局限性
+
+当前限制包括：
+
+- CSV IO 开销较大
+- 暂无 GPU memory pool
+- 空间原语数量有限
+- 主要针对 Windows 构建
+- 暂无多 GPU 支持
+- QuPath bridge 仍为实验阶段
+
+<br>
+
+> 项目目前仍属于早期研究工程阶段。
+
+---
+
+## 7. 作者
+
+<div align="center">
+
+### Zixuan Liang
+
+暨南大学  
+信息科学技术学院
+
+<br>
+
+GitHub：
+
+```text
+https://github.com/XUANZERA
+```
+
+</div>
