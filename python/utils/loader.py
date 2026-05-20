@@ -1,11 +1,11 @@
 import ctypes
 
-from python.utils.path import get_cuda_dll, get_project_root
+from python.utils.path import get_dll, get_project_root
 
 
-def load_cuda_library(name: str):
+def load_library(name: str):
 
-    dll_path = get_cuda_dll(name)
+    dll_path = get_dll(name)
 
     print(f"[CUDA] Loading: {dll_path}")
 
@@ -19,5 +19,3 @@ def load_cuda_library(name: str):
 
 def load_project_root():
     return get_project_root()
-
-# load_cuda_library("nearest_neighbor")

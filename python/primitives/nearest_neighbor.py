@@ -7,13 +7,13 @@ import numpy.typing as npt
 
 from python.data_structure.schema import DistanceResult
 from python.registry import register_primitive
-from python.utils.loader import load_cuda_library
+from python.utils.loader import load_library
 from python.data_structure.contract import (
     NearestNeighborInput, 
     NearestNeighborOutput
 ) 
 
-cuda_lib = load_cuda_library("nearest_neighbor")
+cuda_lib = load_library("nearest_neighbor")
 
 cuda_lib.launch_nearest_neighbor_kernel.argtypes = [
     ctypes.POINTER(ctypes.c_float),

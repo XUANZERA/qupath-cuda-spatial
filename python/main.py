@@ -14,9 +14,10 @@ from python.utils.loader import load_project_root
 PROJECT_ROOT = load_project_root()
 
 engine = Engine()
-print(REGISTRY)
+
 source_path = Path(PROJECT_ROOT, "data/src.csv").resolve()
 target_path = Path(PROJECT_ROOT, "data/tar.csv").resolve()
+
 source = read_point_set_csv(source_path)
 target = read_point_set_csv(target_path)
 

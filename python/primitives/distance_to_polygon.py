@@ -11,13 +11,13 @@ import numpy.typing as npt
 
 from python.data_structure.schema import DistanceResult
 from registry import register_primitive
-from python.utils.loader import load_cuda_library
+from python.utils.loader import load_library
 from python.data_structure.contract import (
     DistanceToPolygonInput,
     DistanceToPolygonOutput
     )
 
-cuda_lib = load_cuda_library("distance_to_polygon")
+cuda_lib = load_library("distance_to_polygon")
 
 cuda_lib.launch_distance_to_polygon_kernel.argtypes = [
     ctypes.POINTER(ctypes.c_float),
