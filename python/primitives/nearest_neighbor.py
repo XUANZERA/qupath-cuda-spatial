@@ -7,17 +7,13 @@ import numpy.typing as npt
 
 from python.data_structure.schema import DistanceResult
 from python.registry import register_primitive
+from python.utils.loader import load_cuda_library
 from python.data_structure.contract import (
     NearestNeighborInput, 
     NearestNeighborOutput
 ) 
 
-
-ROOT_DIR = Path(__file__).resolve().parent.parent.parent
-print(ROOT_DIR,"123123132")
-path_dll = ROOT_DIR / "cuda" / "nearest_neighbor.dll"
-cuda_lib = ctypes.CDLL(path_dll)
-
+cuda_lib = load_cuda_library("nearest_neighbor")
 
 cuda_lib.launch_nearest_neighbor_kernel.argtypes = [
     ctypes.POINTER(ctypes.c_float),
@@ -86,7 +82,7 @@ def nearest_neighbor_gpu(
     return NearestNeighborOutput(
         DistanceResult(
             ids=data.source.ids,
-            output=output
+            distance=output
         )
     )
 
@@ -125,7 +121,7 @@ def nearest_neighbor_cpu(
     return NearestNeighborOutput(
         DistanceResult(
             ids=data.source.ids,
-            output=output
+            distance=output
         )
     )
         

@@ -13,7 +13,7 @@ class DistanceToPolygonInput:
 
 @dataclass
 class DistanceToPolygonOutput:
-    output: DistanceResult
+    distance: DistanceResult
 
 
 @dataclass
@@ -24,4 +24,4 @@ class NearestNeighborInput:
 
 @dataclass
 class NearestNeighborOutput:
-    output: DistanceResult
+    distance: DistanceResult

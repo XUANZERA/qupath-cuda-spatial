@@ -1,4 +1,4 @@
-from registry import REGISTRY
+from python.registry import REGISTRY
 
 class Engine:
 
@@ -11,7 +11,7 @@ class Engine:
         
         if primitive not in REGISTRY:
             raise ValueError(f"Unknown Primitive: {primitive}")
-        if backend not in REGISTRY:
+        if backend not in REGISTRY[primitive]:
             raise ValueError(f"Unknown Backend: {backend}")
         
         func = REGISTRY[primitive][backend]
