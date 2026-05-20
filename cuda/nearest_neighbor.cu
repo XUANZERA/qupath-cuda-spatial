@@ -51,7 +51,7 @@ extern "C" __global__ void nearest_neighbor_kernel(
     output[idx] = sqrtf(min_distance);
 }
 
-extern "C" void launch_nearest_neighbor_kernel(
+extern "C" __declspec(dllexport) void launch_nearest_neighbor_kernel(
     const float* source_x,
     const float* source_y,
     int num_source,

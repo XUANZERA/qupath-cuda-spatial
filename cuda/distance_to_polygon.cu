@@ -65,7 +65,7 @@ extern "C" __global__ void distance_to_polygon_kernel(
 }
 
 
-extern "C" void launch_distance_to_polygon_kernel(
+extern "C" __declspec(dllexport) void launch_distance_to_polygon_kernel(
     const float* source_x, 
     const float* source_y, 
     int num_source,
