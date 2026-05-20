@@ -10,7 +10,7 @@ import numpy as np
 import numpy.typing as npt
 
 from python.data_structure.schema import DistanceResult
-from registry import register_primitive
+from python.registry import register_primitive
 from python.utils.loader import load_library
 from python.data_structure.contract import (
     DistanceToPolygonInput,

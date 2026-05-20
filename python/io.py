@@ -165,7 +165,7 @@ def geojson_write_csv(path: Path, polygon: PolygonSet, encoding: str = "utf-8") 
 
         writer.writerows(rows)
 
-    print(f"Exported {len(rows)} vertices -> {path}")
+    print(f"Exported {len(polygon.x)} vertices -> {path}")
 
 
 def geojson_to_csv(input_path: Path, output_path: Path, encoding: str = "utf-8") -> None:
@@ -186,3 +186,16 @@ def write_distance_result_csv(result: DistanceResult, path: Path) -> None:
     )
 
     df.to_csv(path)
+
+
+def read_polygon_csv(path: Path) -> PolygonSet:
+    df = read_csv(path)
+
+    return PolygonSet(
+        feature_idx=df["feature_idx"].to_numpy(dtype=np.int64),
+        polygon_idx=df["polygon_idx"].to_numpy(dtype=np.int64),
+        ring_idx=df["ring_idx"].to_numpy(dtype=np.int64),
+        vertex_idx=df["vertex_idx"].to_numpy(dtype=np.int64),
+        x=df["x"].to_numpy(dtype=np.float32),
+        y=df["y"].to_numpy(dtype=np.float32),
+    )
