@@ -1,22 +1,22 @@
 from pathlib import Path
-from python.engine import Engine
+from qupath_cuda_spatial.core.engine import Engine
 
+import argparse
 import numpy as np
 
-from python.io import read_point_set_csv, geojson_to_csv, read_polygon_csv
-from python.data_structure.contract import (
+from qupath_cuda_spatial.io.io import read_point_set_csv, geojson_to_csv, read_polygon_csv
+from qupath_cuda_spatial.types.contract import (
     NearestNeighborInput, 
     NearestNeighborOutput,
     DistanceToPolygonInput,
     DistanceToPolygonOutput
 ) 
 
-from python.registry import REGISTRY
-import python.primitives.nearest_neighbor
-import python.primitives.distance_to_polygon
-from python.utils.loader import load_project_root
-
-PROJECT_ROOT = load_project_root()
+from qupath_cuda_spatial.core.registry import REGISTRY
+import qupath_cuda_spatial.primitives.nearest_neighbor
+import qupath_cuda_spatial.primitives.distance_to_polygon
+from qupath_cuda_spatial.utils.loader import load_library
+from qupath_cuda_spatial.utils.path import PROJECT_ROOT
 
 engine = Engine()
 
@@ -60,6 +60,7 @@ gpu_result = engine.run(
     data=my_input,
 )
 
+
 cpu_result = engine.run(
     primitive="distance_to_polygon",
     backend="cpu",
@@ -73,3 +74,29 @@ print(
         atol=1e-5,
     )
 )
+
+parser = argparse.ArgumentParser()
+
+parser.add_argument("--primitive")
+parser.add_argument("--source")
+parser.add_argument("--target")
+parser.add_argument("--out")
+parser.add_argument("--backend", default="gpu", choices=["cpu", 'gpu'])
+
+args = parser.parse_args()
+
+primitive = args.primitive
+source_path = args.source
+target_path = args.target
+out_path = args.out
+backend = args.backend
+
+
+
+engine.run(
+    primitive=primitive,
+    backend=backend,
+    data=my_input
+)
+
+

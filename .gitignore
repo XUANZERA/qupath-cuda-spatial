@@ -1,7 +1,35 @@
-# Rust build output
-/target/
+# ============================================================
+# Python
+# ============================================================
 
-# CUDA / C / C++ build artifacts
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+*.egg-info/
+.eggs/
+
+.venv/
+venv/
+env/
+
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ============================================================
+# Build artifacts
+# ============================================================
+
+build/
+dist/
+target/
+
+# ============================================================
+# CUDA / C / C++ artifacts
+# ============================================================
+
 *.exe
 *.exp
 *.lib
@@ -9,24 +37,49 @@
 *.o
 *.pdb
 *.ilk
+*.dll
 
-# Temporary CSV outputs
-/data/result.csv
-/data/source.csv
-/data/target.csv
-/data/cells_input.csv
-/data/boundary_input.csv
+# ============================================================
+# Benchmark outputs
+# ============================================================
 
-# QuPath / local temp
+benchmarks/results/
+
+# Optional:
+# Ignore generated benchmark datasets
+benchmarks/distance_to_polygon
+benchmarks/nearest_neighbor
+benchmarks/results
+
+# ============================================================
+# Temporary data outputs
+# ============================================================
+
+data/result.csv
+data/source.csv
+data/target.csv
+data/cells_input.csv
+data/boundary_input.csv
+
+# ============================================================
+# Logs / temp
+# ============================================================
+
 *.tmp
 *.log
 
-# VSCode / system
+# ============================================================
+# IDE / OS
+# ============================================================
+
 .vscode/
+.idea/
+
 .DS_Store
 Thumbs.db
 
-/benchmarks/
-/test.bat
+# ============================================================
+# Local scripts
+# ============================================================
 
-__pycache__/*.pyc
+test.bat

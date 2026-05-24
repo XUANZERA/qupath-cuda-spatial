@@ -1,11 +1,11 @@
 import ctypes
 
-from python.utils.path import get_dll, get_project_root
+from qupath_cuda_spatial.utils.path import DLL_DIR
 
 
 def load_library(name: str):
 
-    dll_path = get_dll(name)
+    dll_path = DLL_DIR / f"{name}.dll"
 
     print(f"[CUDA] Loading: {dll_path}")
 
@@ -15,7 +15,3 @@ def load_library(name: str):
         )
 
     return ctypes.CDLL(str(dll_path))
-
-
-def load_project_root():
-    return get_project_root()

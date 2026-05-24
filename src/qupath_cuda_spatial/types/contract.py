@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from python.data_structure.schema import (
+from src.qupath_cuda_spatial.types.schema import (
     PolygonSet, 
     PointSet,
     DistanceResult

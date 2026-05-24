@@ -7,7 +7,7 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 
-from python.data_structure.schema import PointSet, PolygonSet, DistanceResult
+from src.qupath_cuda_spatial.types.schema import PointSet, PolygonSet, DistanceResult
 
 
 def read_csv(path: Path, encoding: str = "utf-8") -> pd.DataFrame:

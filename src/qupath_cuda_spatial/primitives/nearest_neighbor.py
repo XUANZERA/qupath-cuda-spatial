@@ -5,13 +5,16 @@ import ctypes
 import numpy as np
 import numpy.typing as npt
 
-from python.data_structure.schema import DistanceResult
-from python.registry import register_primitive
-from python.utils.loader import load_library
-from python.data_structure.contract import (
+from qupath_cuda_spatial.types.schema import DistanceResult
+from qupath_cuda_spatial.utils.loader import load_library
+from qupath_cuda_spatial.types.contract import (
     NearestNeighborInput, 
     NearestNeighborOutput
-) 
+)
+from qupath_cuda_spatial.core.registry import (
+    register_implementation
+)
+
 
 cuda_lib = load_library("nearest_neighbor")
 
@@ -30,9 +33,9 @@ cuda_lib.launch_nearest_neighbor_kernel.argtypes = [
 cuda_lib.launch_nearest_neighbor_kernel.restype = None
 
 
-@register_primitive(
+@register_implementation(
     primitive_name="nearest_neighbor",
-    backend_name="gpu"
+    backend_name="gpu",
 )
 def nearest_neighbor_gpu(
     data: NearestNeighborInput
@@ -87,9 +90,9 @@ def nearest_neighbor_gpu(
     )
 
 
-@register_primitive(
+@register_implementation(
     primitive_name="nearest_neighbor",
-    backend_name="cpu"
+    backend_name="cpu",
 )
 def nearest_neighbor_cpu(
     data: NearestNeighborInput
